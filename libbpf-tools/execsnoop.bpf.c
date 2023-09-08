@@ -43,7 +43,7 @@ int tracepoint__syscalls__sys_enter_execve(struct trace_event_raw_sys_enter* ctx
 	int ret;
 	struct event *event;
 	struct task_struct *task;
-	const char **args = (const char **)(ctx->args[1]);
+	const char **args = (const char **)BPF_CORE_READ(ctx, args[1]);
 	const char *argp;
 
 	if (filter_cg && !bpf_current_task_under_cgroup(&cgroup_map, 0))
@@ -72,7 +72,7 @@ int tracepoint__syscalls__sys_enter_execve(struct trace_event_raw_sys_enter* ctx
 	event->args_count = 0;
 	event->args_size = 0;
 
-	ret = bpf_probe_read_user_str(event->args, ARGSIZE, (const char*)ctx->args[0]);
+	ret = bpf_probe_read_user_str(event->args, ARGSIZE, (const char*)BPF_CORE_READ(ctx, args[0]));
 	if (ret < 0) {
 		return 0;
 	}
@@ -131,7 +131,7 @@ int tracepoint__syscalls__sys_exit_execve(struct trace_event_raw_sys_exit* ctx)
 	event = bpf_map_lookup_elem(&execs, &pid);
 	if (!event)
 		return 0;
-	ret = ctx->ret;
+	ret = BPF_CORE_READ(ctx, ret);
 	if (ignore_failed && ret < 0)
 		goto cleanup;
 

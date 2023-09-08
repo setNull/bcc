@@ -3,6 +3,7 @@
 #include <vmlinux.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
+#include <bpf/bpf_core_read.h>
 #include "statsnoop.h"
 
 #define MAX_ENTRIES 10240
@@ -76,7 +77,7 @@ int handle_statfs_entry(struct trace_event_raw_sys_enter *ctx)
 SEC("tracepoint/syscalls/sys_exit_statfs")
 int handle_statfs_return(struct trace_event_raw_sys_exit *ctx)
 {
-	return probe_return(ctx, (int)ctx->ret);
+	return probe_return(ctx, (int)BPF_CORE_READ(ctx, ret));
 }
 
 SEC("tracepoint/syscalls/sys_enter_newstat")
@@ -88,7 +89,7 @@ int handle_newstat_entry(struct trace_event_raw_sys_enter *ctx)
 SEC("tracepoint/syscalls/sys_exit_newstat")
 int handle_newstat_return(struct trace_event_raw_sys_exit *ctx)
 {
-	return probe_return(ctx, (int)ctx->ret);
+	return probe_return(ctx, (int)BPF_CORE_READ(ctx, ret));
 }
 
 SEC("tracepoint/syscalls/sys_enter_statx")
@@ -100,7 +101,7 @@ int handle_statx_entry(struct trace_event_raw_sys_enter *ctx)
 SEC("tracepoint/syscalls/sys_exit_statx")
 int handle_statx_return(struct trace_event_raw_sys_exit *ctx)
 {
-	return probe_return(ctx, (int)ctx->ret);
+	return probe_return(ctx, (int)BPF_CORE_READ(ctx, ret));
 }
 
 SEC("tracepoint/syscalls/sys_enter_newfstatat")
@@ -112,7 +113,7 @@ int handle_newfstatat_entry(struct trace_event_raw_sys_enter *ctx)
 SEC("tracepoint/syscalls/sys_exit_newfstatat")
 int handle_newfstatat_return(struct trace_event_raw_sys_exit *ctx)
 {
-	return probe_return(ctx, (int)ctx->ret);
+	return probe_return(ctx, (int)BPF_CORE_READ(ctx, ret));
 }
 
 SEC("tracepoint/syscalls/sys_enter_newlstat")
@@ -124,7 +125,7 @@ int handle_newlstat_entry(struct trace_event_raw_sys_enter *ctx)
 SEC("tracepoint/syscalls/sys_exit_newlstat")
 int handle_newlstat_return(struct trace_event_raw_sys_exit *ctx)
 {
-	return probe_return(ctx, (int)ctx->ret);
+	return probe_return(ctx, (int)BPF_CORE_READ(ctx, ret));
 }
 
 char LICENSE[] SEC("license") = "GPL";

@@ -3,6 +3,7 @@
 // Copyright (c) 2020 Netflix
 #include <vmlinux.h>
 #include <bpf/bpf_helpers.h>
+#include <bpf/bpf_core_read.h>
 #include "opensnoop.h"
 
 const volatile pid_t targ_pid = 0;
@@ -58,7 +59,7 @@ int tracepoint__syscalls__sys_enter_open(struct trace_event_raw_sys_enter* ctx)
 	if (trace_allowed(tgid, pid)) {
 		struct args_t args = {};
 		args.fname = (const char *)ctx->args[0];
-		args.flags = (int)ctx->args[1];
+		args.flags = (int)BPF_CORE_READ(ctx, args[1]);
 		bpf_map_update_elem(&start, &pid, &args, 0);
 	}
 	return 0;
@@ -76,7 +77,7 @@ int tracepoint__syscalls__sys_enter_openat(struct trace_event_raw_sys_enter* ctx
 	if (trace_allowed(tgid, pid)) {
 		struct args_t args = {};
 		args.fname = (const char *)ctx->args[1];
-		args.flags = (int)ctx->args[2];
+		args.flags = (int)BPF_CORE_READ(ctx, args[2]);
 		bpf_map_update_elem(&start, &pid, &args, 0);
 	}
 	return 0;
@@ -94,7 +95,7 @@ int trace_exit(struct trace_event_raw_sys_exit* ctx)
 	ap = bpf_map_lookup_elem(&start, &pid);
 	if (!ap)
 		return 0;	/* missed entry */
-	ret = ctx->ret;
+	ret = BPF_CORE_READ(ctx, ret);
 	if (targ_failed && ret >= 0)
 		goto cleanup;	/* want failed only */
 

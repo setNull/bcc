@@ -98,22 +98,23 @@ int mount_entry(struct trace_event_raw_sys_enter *ctx)
 	const char *dest = (const char *)ctx->args[1];
 	const char *fs = (const char *)ctx->args[2];
 	__u64 flags = (__u64)ctx->args[3];
-	const char *data = (const char *)ctx->args[4];
+	const char* data = (const char *)BPF_CORE_READ(ctx, args[4]);
 
 	return probe_entry(src, dest, fs, flags, data, MOUNT);
 }
 
+
 SEC("tracepoint/syscalls/sys_exit_mount")
 int mount_exit(struct trace_event_raw_sys_exit *ctx)
 {
-	return probe_exit(ctx, (int)ctx->ret);
+	return probe_exit(ctx, (int)BPF_CORE_READ(ctx, ret));
 }
 
 SEC("tracepoint/syscalls/sys_enter_umount")
 int umount_entry(struct trace_event_raw_sys_enter *ctx)
 {
 	const char *dest = (const char *)ctx->args[0];
-	__u64 flags = (__u64)ctx->args[1];
+	__u64 flags = (__u64)BPF_CORE_READ(ctx, args[1]);
 
 	return probe_entry(NULL, dest, NULL, flags, NULL, UMOUNT);
 }
@@ -121,7 +122,7 @@ int umount_entry(struct trace_event_raw_sys_enter *ctx)
 SEC("tracepoint/syscalls/sys_exit_umount")
 int umount_exit(struct trace_event_raw_sys_exit *ctx)
 {
-	return probe_exit(ctx, (int)ctx->ret);
+	return probe_exit(ctx, (int)BPF_CORE_READ(ctx, ret));
 }
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
